@@ -1,3 +1,6 @@
+Author: Halima Ladan  
+Data Scientist | Marketing Analytics, Experimentation & AI  
+
 # marketing-mmm-budget-optimization
 Bayesian Media Mix Modeling (MMM) using PyMC for marketing budget optimization
 
