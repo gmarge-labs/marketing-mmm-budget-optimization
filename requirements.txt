@@ -4,7 +4,8 @@ matplotlib>=3.8,<3.11
 seaborn>=0.13,<0.14
 arviz>=0.20,<0.24
 xarray>=2024.1.0
-pymc>=5.20,<6
+pymc==5.28.5
 pymc-extras>=0.2.4
-pymc-marketing>=0.16
+pymc-marketing==0.19.2
 graphviz
+jupyter
