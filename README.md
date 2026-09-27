@@ -2,7 +2,7 @@
 
 **Author:** Halima Ladan · Data Scientist, Marketing Measurement & AI
 
-A Bayesian media mix model (MMM) built in PyMC-Marketing on weekly sales and spend across 12 paid media channels, followed by an audit of that model. The point is not just fitting a model, but showing which of its conclusions the data actually supports: data window, baseline, identifiability, convergence, and out-of-sample validation.
+A Bayesian media mix model (MMM) built in PyMC-Marketing on weekly sales and spend across 12 paid media channels, followed by an audit of that model and an automated acceptance gate that grades any fit without an analyst in the loop. The point is not just fitting a model, but showing which of its conclusions the data actually supports: data window, baseline, identifiability, convergence, and out-of-sample validation.
 
 ## The question
 
@@ -39,7 +39,33 @@ Treats every judgment call in notebook 1 as something to check.
 
 **Recommendation for the client:** fix the reporting gap and the March 2024 feed issue at the source, and run a brand search holdout or geo test. That experiment would calibrate both the brand search effect and the baseline, which the observational data cannot separate.
 
-All audit fits use 4 chains, 1,500 tuning and 1,000 draws, with target_accept 0.95.
+All audit fits use 4 chains, 1,500 tuning and 1,000 draws, with target_accept 0.95, and seeded prior and posterior sampling.
+
+## Notebook 3 — Automated acceptance gate
+
+`03_acceptance_gate.ipynb` · `src/acceptance_gate.py`
+
+The audit's judgment calls, turned into code. Each check returns PASS, WARN, or FAIL, and the model gets a tier: **A** publish, **B** publish with caveats shown, **C** do not publish.
+
+| Check | Threshold |
+|---|---|
+| Divergences | 0 |
+| Max R-hat | ≤ 1.01 |
+| Min bulk ESS | ≥ 400 |
+| Test MAPE | warn > 25%, fail > 40% |
+| Degenerate baseline | P(baseline < 0) ≤ 5% |
+| Baseline share | warn if mean < 10% |
+| Media share | P(media > 100% of sales) ≤ 5% |
+| ROAS interval width | warn if median (97% − 3%) / mean > 3 |
+| Identifiability | warn if > 50% of channels are prior-driven |
+
+| Spec | Tier | Why |
+|---|---|---|
+| A. Original priors | **C — reject** | 1 divergence, negative baseline, media > 100% of sales, despite the best test MAPE |
+| B. Positive baseline | **B — caveats** | Healthy sampling; baseline near zero and 10 of 12 channels prior-driven |
+| C. Brand search as control | **B — caveats** | Healthy sampling; baseline near zero and weaker test fit |
+
+Every check has a unit test that breaks exactly one thing and asserts the check fires (`tests/test_acceptance_gate.py`, 12 tests).
 
 ## Repository
 
@@ -47,7 +73,11 @@ All audit fits use 4 chains, 1,500 tuning and 1,000 draws, with target_accept 0.
 |---|---|
 | `bayesian_mmm_budget_optimization.ipynb` | Baseline MMM: EDA, modeling, diagnostics, and client-facing answers |
 | `02_model_audit.ipynb` | Audit: data window, prior alignment, baseline, identifiability, ROAS uncertainty |
+| `03_acceptance_gate.ipynb` | Fits the three specifications and grades each with the gate |
 | `src/data_prep.py` | Data preparation: reporting-gap imputation and structural-break window |
+| `src/mmm_specs.py` | Model specifications, with priors aligned to the model's channel order |
+| `src/acceptance_gate.py` | Automated acceptance gate: checks, thresholds, and tiers |
+| `tests/test_acceptance_gate.py` | Unit tests proving each gate check fires |
 | `stunnerz_skateboards_simulated_data.csv` | Simulated Stunnerz dataset |
 | `requirements.txt` | Pinned dependencies |
 
@@ -56,8 +86,9 @@ All audit fits use 4 chains, 1,500 tuning and 1,000 draws, with target_accept 0.
 ```bash
 pip install -r requirements.txt
 jupyter notebook 02_model_audit.ipynb
+pytest tests
 ```
 
 ## Tools
 
-Python, PyMC, PyMC-Marketing, ArviZ, pandas, NumPy, Matplotlib, Seaborn
+Python, PyMC, PyMC-Marketing, ArviZ, pandas, NumPy, Matplotlib, Seaborn, pytest

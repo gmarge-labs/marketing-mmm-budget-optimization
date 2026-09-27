@@ -9,3 +9,4 @@ pymc-extras>=0.2.4
 pymc-marketing==0.19.2
 graphviz
 jupyter
+pytest
