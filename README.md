@@ -2,6 +2,8 @@
 
 **Author:** Halima Ladan · Data Scientist, Marketing Measurement & AI
 
+> **How this was built:** I used AI-assisted tooling for implementation and code review. Problem framing, methodology, modeling decisions, and interpretation are my own, and I can walk through and defend every choice in this repo.
+
 A Bayesian media mix model (MMM) built in PyMC-Marketing on weekly sales and spend across 12 paid media channels, followed by an audit of that model and an automated acceptance gate that grades any fit without an analyst in the loop. The point is not just fitting a model, but showing which of its conclusions the data actually supports: data window, baseline, identifiability, convergence, and out-of-sample validation.
 
 ## The question
